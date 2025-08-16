@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const n8nResponse = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: userQuestion })
+      body: JSON.stringify({ chatInput: userQuestion })
     });
 
     if (!n8nResponse.ok) {
