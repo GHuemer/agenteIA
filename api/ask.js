@@ -11,10 +11,11 @@ export default async function handler(req, res) {
   try {
     const userQuestion = req.body.question;
 
+    // Enviando para o n8n no formato { "question": "..." }
     const n8nResponse = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chatInput: userQuestion })
+      body: JSON.stringify({ question: userQuestion })
     });
 
     if (!n8nResponse.ok) {
@@ -23,19 +24,18 @@ export default async function handler(req, res) {
     }
 
     const n8nData = await n8nResponse.json();
-    let answer = '';
+    let finalAnswer = 'Desculpe, não consegui processar a resposta.';
 
-    // Se o n8n retornar um array de objetos
-    if (Array.isArray(n8nData) && n8nData.length > 0) {
-      const firstItem = n8nData[0].json || {};
-      answer = firstItem.output || firstItem.text || firstItem.answer || '';
-    } 
-    // Se o n8n retornar um objeto direto
-    else if (typeof n8nData === 'object' && n8nData !== null) {
-      answer = n8nData.output || n8nData.text || n8nData.answer || '';
+    // Extrai a resposta do n8n de forma segura
+    if (Array.isArray(n8nData) && n8nData[0] && n8nData[0].output) {
+      finalAnswer = n8nData[0].output;
+    } else if (n8nData && n8nData.output) {
+      finalAnswer = n8nData.output;
     }
 
-    res.status(200).send(answer);
+    // --- A CORREÇÃO PRINCIPAL ESTÁ AQUI ---
+    // Envia a resposta de volta para o frontend no formato JSON correto
+    res.status(200).json({ answer: finalAnswer });
 
   } catch (error) {
     console.error('Erro na função serverless:', error);
