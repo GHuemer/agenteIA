@@ -135,27 +135,29 @@
   </div>
 
   <script>
-    // Coloque esta versão de volta no seu <script> dentro do index.html
-
-async function callAskEndpoint(message) {
+    async function callAskEndpoint(message) {
   // 1) Função global ask() - pode ignorar isto
   if (typeof window.ask === 'function') {
     const res = await window.ask(message);
     return typeof res === 'string' ? res : (res && res.answer) || '';
   }
-  // 2) Fallback HTTP: POST /ask (esta é a parte importante)
-  const r = await fetch('/api/ask', { // <--- Deve chamar '/ask'
+  
+  // 2) Fallback HTTP: POST /api/ask (CORRIGIDO)
+  const r = await fetch('/api/ask', { // <--- A alteração está aqui
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ question: message })
   });
+
   if (!r.ok) {
     const text = await r.text().catch(() => '');
-    throw new Error(`Falha no endpoint /ask (${r.status}): ${text || r.statusText}`);
+    throw new Error(`Falha no endpoint /api/ask (${r.status}): ${text || r.statusText}`);
   }
+
   const data = await r.json().catch(() => ({}));
   if (!data || typeof data.answer !== 'string') {
-    throw new Error('Resposta inválida do endpoint /ask (esperado JSON com "answer").');
+    // Se a resposta não tiver "answer", mostra o JSON completo para depuração
+    return `Resposta inesperada: ${JSON.stringify(data)}`;
   }
   return data.answer;
 }
@@ -239,6 +241,7 @@ async function callAskEndpoint(message) {
   </script>
 </body>
 </html>
+
 
 
 
