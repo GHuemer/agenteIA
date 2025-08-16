@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const n8nResponse = await fetch(n8nWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chatInput: userQuestion }) // <-- apenas este
+      body: JSON.stringify({ chatInput: userQuestion })
     });
 
     if (!n8nResponse.ok) {
@@ -23,7 +23,9 @@ export default async function handler(req, res) {
     }
 
     const n8nData = await n8nResponse.json();
-    res.status(200).json(n8nData);
+
+    // Retorna apenas a resposta do chat
+    res.status(200).send(n8nData.output);
 
   } catch (error) {
     console.error('Erro na função serverless:', error);
