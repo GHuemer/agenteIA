@@ -23,11 +23,16 @@ export default async function handler(req, res) {
     }
 
     const n8nData = await n8nResponse.json();
-
-    // Extrai a resposta do chat, considerando que n8n retorna um array de objetos
     let answer = '';
+
+    // Se o n8n retornar um array de objetos
     if (Array.isArray(n8nData) && n8nData.length > 0) {
-      answer = n8nData[0].json?.output || '';
+      const firstItem = n8nData[0].json || {};
+      answer = firstItem.output || firstItem.text || firstItem.answer || '';
+    } 
+    // Se o n8n retornar um objeto direto
+    else if (typeof n8nData === 'object' && n8nData !== null) {
+      answer = n8nData.output || n8nData.text || n8nData.answer || '';
     }
 
     res.status(200).send(answer);
