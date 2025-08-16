@@ -24,8 +24,13 @@ export default async function handler(req, res) {
 
     const n8nData = await n8nResponse.json();
 
-    // Retorna apenas a resposta do chat
-    res.status(200).send(n8nData.output);
+    // Extrai a resposta do chat, considerando que n8n retorna um array de objetos
+    let answer = '';
+    if (Array.isArray(n8nData) && n8nData.length > 0) {
+      answer = n8nData[0].json?.output || '';
+    }
+
+    res.status(200).send(answer);
 
   } catch (error) {
     console.error('Erro na função serverless:', error);
