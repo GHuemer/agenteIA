@@ -144,7 +144,7 @@ async function callAskEndpoint(message) {
     return typeof res === 'string' ? res : (res && res.answer) || '';
   }
   // 2) Fallback HTTP: POST /ask (esta é a parte importante)
-  const r = await fetch('/ask', { // <--- Deve chamar '/ask'
+  const r = await fetch('/api/ask', { // <--- Deve chamar '/ask'
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ question: message })
@@ -239,5 +239,6 @@ async function callAskEndpoint(message) {
   </script>
 </body>
 </html>
+
 
 
