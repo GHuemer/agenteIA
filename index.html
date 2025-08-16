@@ -140,28 +140,35 @@
     // (ex.: injetada pelo host). Se não existir, faz POST para "/ask" com JSON
     // { question: "..." } e espera { answer: "..." } na resposta.
     async function callAskEndpoint(message) {
-      // 1) Função global ask()
-      if (typeof window.ask === 'function') {
-        const res = await window.ask(message);
-        // Pode ser string or {answer:"..."}
-        return typeof res === 'string' ? res : (res && res.answer) || '';
-      }
-      // 2) Fallback HTTP: POST /ask
-      const r = await fetch('/ask', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ question: message })
-      });
-      if (!r.ok) {
-        const text = await r.text().catch(() => '');
-        throw new Error(`Falha no endpoint /ask (${r.status}): ${text || r.statusText}`);
-      }
-      const data = await r.json().catch(() => ({}));
-      if (!data || typeof data.answer !== 'string') {
-        throw new Error('Resposta inválida do endpoint /ask (esperado JSON com "answer").');
-      }
-      return data.answer;
+  // SUBSTITUA PELA SUA URL COMPLETA DO WEBHOOK N8N
+  const N8N_WEBHOOK_URL = "https://gabrielhuemer.app.n8n.cloud/webhook-test/8c9ba217-7897-4940-b7ea-def062d20b80";
+
+  try {
+    const response = await fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: message }) // O n8n vai receber { "question": "..." }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erro na chamada ao n8n (${response.status}): ${errorText}`);
     }
+
+    // O n8n deve retornar um JSON com a chave "answer"
+    const data = await response.json();
+    if (!data || typeof data.answer !== 'string') {
+      // Se a resposta não tiver "answer", mostra o JSON completo para depuração
+      return `Resposta inesperada do n8n: ${JSON.stringify(data)}`;
+    }
+    
+    return data.answer;
+
+  } catch (err) {
+    console.error("Erro em callAskEndpoint:", err);
+    throw err; // Re-lança o erro para a UI poder mostrá-lo
+  }
+}
 
     // === UI helpers ===========================================================
     const chat = document.getElementById('chat');
@@ -242,3 +249,4 @@
   </script>
 </body>
 </html>
+
